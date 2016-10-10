@@ -26,12 +26,16 @@ func init() {
 
 func CrawlRange(event string, runNumberFirst, runNumberLast int) {
 	for i := runNumberFirst; i <= runNumberLast; i++ {
-		Crawler(event, i)
+		err := Crawler(event, i)
+		if err.Error()[:20] == "Could not find table" {
+			log.Println("Assuming no more events in range")
+			return
+		}
 	}
 }
 
-func Crawler(event string, runNumber int /*, wg *sync.WaitGroup*/) {
-	err := GetResults(event, runNumber)
+func Crawler(event string, runNumber int) (err error) {
+	err = GetResults(event, runNumber)
 	if err != nil {
 		log.Println(err)
 	}

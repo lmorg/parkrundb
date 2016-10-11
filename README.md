@@ -1,5 +1,5 @@
 # parkrundb
-Creates sqlite3 database from the Parkrun Results page
+Creates or updates an sqlite3 database from the Parkrun Results page
 
 ## Flags:
 

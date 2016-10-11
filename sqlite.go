@@ -10,19 +10,19 @@ import (
 
 const (
 	sqlCreateTable = `CREATE TABLE %s.results (
-							id			integer PRIMARY KEY,
-							event		string,
-							run_number	integer,
-							pos			integer,
-							parkrunner	string,
-							time		string,
-							age_cat		string,
-							age_grade	string,
-							gender		char,
-							gender_pos	integer,
-							club		string,
-							note		string,
-							total_runs	integer
+							id              integer PRIMARY KEY,
+							event           string,
+							run_number      integer,
+							pos             integer,
+							parkrunner      string,
+							time            string,
+							age_cat         string,
+							age_grade       string,
+							gender          char,
+							gender_pos      integer,
+							club            string,
+							note            string,
+							total_runs      integer
 						);`
 
 	sqlInsertRecord = `INSERT INTO mem.results (

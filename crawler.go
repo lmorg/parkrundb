@@ -27,7 +27,7 @@ func init() {
 func CrawlRange(event string, runNumberFirst, runNumberLast int) {
 	for i := runNumberFirst; i <= runNumberLast; i++ {
 		err := Crawler(event, i)
-		if err.Error()[:20] == "Could not find table" {
+		if err != nil && len(err.Error()) > 20 && err.Error()[:20] == "Could not find table" {
 			log.Println("Assuming no more events in range")
 			return
 		}

@@ -10,7 +10,12 @@ import (
 	"strconv"
 )
 
+const uriTableRunNumber = "http://www.parkrun.org.uk/%s/results/weeklyresults/?runSeqNumber=%d"
+const uriTableLatest = "http://www.parkrun.org.uk/%s/results/latestresults/"
+
 const errNoTable = "Could not find table"
+
+const latest = -1
 
 var (
 	rxTableBody *regexp.Regexp
@@ -59,12 +64,18 @@ func checkErrNoTable(err error) bool {
 
 func GetResults(event string, runNumber int) (err error) {
 	var (
+		uri  string
 		resp *http.Response
 		body []byte
 	)
 
-	const uri = "http://www.parkrun.org.uk/%s/results/weeklyresults/?runSeqNumber=%d"
-	if resp, err = http.Get(fmt.Sprintf(uri, event, runNumber)); err != nil {
+	if runNumber == latest {
+		uri = fmt.Sprintf(uriTableLatest, event)
+	} else {
+		uri = fmt.Sprintf(uriTableRunNumber, event, runNumber)
+	}
+
+	if resp, err = http.Get(uri); err != nil {
 		return
 	}
 

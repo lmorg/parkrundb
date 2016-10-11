@@ -26,6 +26,10 @@ func main() {
 		CrawlAll(flag)
 	}
 
+	for _, flag := range fCrawlLatest {
+		CrawlTable(flag, latest)
+	}
+
 	if err := SyncDbToDisk(); err != nil {
 		log.Println(err)
 	}

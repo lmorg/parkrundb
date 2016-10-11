@@ -11,13 +11,14 @@ import (
 var (
 	fDbFileName string
 
-	fCrawlTable FlagCrawlTable
-	fCrawlRange FlagCrawlRange
-	fCrawlAll   FlagCrawlAll
+	fCrawlTable  FlagCrawlTable
+	fCrawlRange  FlagCrawlRange
+	fCrawlAll    FlagCrawlAll
+	fCrawlLatest FlagCrawlAll
 
 	rxFlagTable *regexp.Regexp
 	rxFlagRange *regexp.Regexp
-	rxFlagAll   *regexp.Regexp
+	rxFlagAll   *regexp.Regexp // also used for latest
 )
 
 type FlagCrawlTable []string
@@ -66,6 +67,7 @@ func Flags() {
 	flag.Var(&fCrawlTable, "table", "")
 	flag.Var(&fCrawlRange, "range", "")
 	flag.Var(&fCrawlAll, "all", "")
+	flag.Var(&fCrawlAll, "latest", "")
 
 	flag.Parse()
 
@@ -79,15 +81,17 @@ func Flags() {
 func Usage() {
 	fmt.Print(`
 Usage: parkrundb [--db filename]
+                 [--latest event] ...
                  [--table event,runnumber] ...
                  [--range event,firstrun,lastrun] ...
                  [--all event] ...
 
     --db      Sqlite3 database filename. Defaults to parkrun.db
+    --latest  Returns latest table from an event. Parameters: text
     --table   Returns specific table. Parameters: text,number
     --range   Returns all tables in range inclusive. Parameters: text,number,number
     --all     Returns every table from an event. Parameters: text
 
-Multiple table/range/all flags can be used. eg downloading results across multiple events.
+Multiple table/range/all/latest flags can be used. eg downloading results across multiple events.
 `)
 }

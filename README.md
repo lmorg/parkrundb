@@ -1,7 +1,19 @@
 # parkrundb
 Creates sqlite3 database from the Parkrun Results page
 
-Currently the parkrun name is hardcoded into the source code. Realistically this should be passed out to command line flags. This will likely be included in later versions. But for now, you will have update parkrundb.go file with the name of your local park run event before compiling.
+## Flags:
+
+    Usage: parkrundb [--db filename]
+                     [--table event,runnumber] ...
+                     [--range event,firstrun,lastrun] ...
+                     [--all event] ...
+
+        --db      Sqlite3 database filename. Defaults to parkrun.db
+        --table   Returns specific table. Parameters: text,number
+        --range   Returns all tables in range inclusive. Parameters: text,number,number
+        --all     Returns every table from an event. Parameters: text
+
+    Multiple table/range/all flags can be used. eg downloading results across multiple events.
 
 ## Prerequisites:
 
@@ -31,7 +43,7 @@ Then run:
 
 	go get github.com/mattn/go-sqlite3
 	go install github.com/mattn/go-sqlite3
-	go install github.com/lmorg/parkrundb```
+	go install github.com/lmorg/parkrundb
 
 ## Recompiling changes to _parkrundb_:
 

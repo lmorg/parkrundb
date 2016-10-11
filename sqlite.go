@@ -8,31 +8,8 @@ import (
 	"sync"
 )
 
-var (
-	//dbDisk *sql.DB
-	//dbMem  *sql.DB
-	db    *sql.DB
-	mutex = &sync.Mutex{}
-)
-
 const (
-	sqlCreateTable = `CREATE TABLE results (
-							id			integer PRIMARY KEY,
-							event		string,
-							run_number	integer,
-							pos			integer,
-							parkrunner	string,
-							time		string,
-							age_cat		string,
-							age_grade	string,
-							gender		char,
-							gender_pos	integer,
-							club		string,
-							note		string,
-							total_runs	integer
-						);`
-
-	sqlCreateTableM = `CREATE TABLE mem.results (
+	sqlCreateTable = `CREATE TABLE %s.results (
 							id			integer PRIMARY KEY,
 							event		string,
 							run_number	integer,
@@ -62,20 +39,26 @@ const (
 							note,
 							total_runs
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
+
+	sqlSyncToDisk = `INSERT INTO main.results SELECT * FROM mem.results;`
 )
 
-func OpenDB(filename string) {
+var (
+	db    *sql.DB
+	mutex = &sync.Mutex{}
+)
+
+func OpenDB() {
 	var err error
 
 	log.Println("Opening database")
 
-	//db, err = sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared&mode=rwc", filename))
-	db, err = sql.Open("sqlite3", fmt.Sprintf("file:%s", filename))
+	db, err = sql.Open("sqlite3", fmt.Sprintf("file:%s", fDbFileName))
 	if err != nil {
 		log.Fatalln("Could not open database:", err)
 	}
 
-	_, err = db.Exec(sqlCreateTable)
+	_, err = db.Exec(fmt.Sprintf(sqlCreateTable, "main"))
 	if err != nil {
 		log.Println("Could not create table:", err)
 	}
@@ -85,7 +68,7 @@ func OpenDB(filename string) {
 		log.Fatalln("Could not create in memory database")
 	}
 
-	_, err = db.Exec(sqlCreateTableM)
+	_, err = db.Exec(fmt.Sprintf(sqlCreateTable, "mem"))
 	if err != nil {
 		log.Fatalln("Could not create memory table:", err)
 	}
@@ -116,19 +99,11 @@ func InsertRecord(rec Record) (err error) {
 	return
 }
 
-func SyncDbToDisk(filename string) (err error) {
-	log.Println("Syncing memory to", filename)
-	_, err = db.Exec(`INSERT INTO main.results SELECT * FROM mem.results;`)
+func SyncDbToDisk() (err error) {
+	log.Println("Syncing memory to", fDbFileName)
+	_, err = db.Exec(sqlSyncToDisk)
 	return
 }
-
-/*
-func Query(sql string) (rows *sql.Rows, err error) {
-	rows, err = db.Query(sql)
-
-	return
-}
-*/
 
 func CloseDB() {
 	db.Close()

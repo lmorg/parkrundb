@@ -7,7 +7,7 @@ type Record struct {
 	RunNumber  int
 	Pos        int
 	ParkRunner string
-	Time       string //time.Time
+	Time       string
 	AgeCat     string
 	AgeGrade   string
 	Gender     byte

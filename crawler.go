@@ -10,6 +10,8 @@ import (
 	"strconv"
 )
 
+const errNoTable = "Could not find table"
+
 var (
 	rxTableBody *regexp.Regexp
 	rxTableRow  *regexp.Regexp
@@ -24,21 +26,35 @@ func init() {
 	rxStripTags, _ = regexp.Compile(`<.*?>`)
 }
 
-func CrawlRange(event string, runNumberFirst, runNumberLast int) {
-	for i := runNumberFirst; i <= runNumberLast; i++ {
-		err := Crawler(event, i)
-		if err != nil && len(err.Error()) > 20 && err.Error()[:20] == "Could not find table" {
-			log.Println("Assuming no more events in range")
+func CrawlTable(event string, runNumber int) (err error) {
+	err = GetResults(event, runNumber)
+	if err != nil {
+		log.Println(err)
+	}
+	return
+}
+
+func CrawlRange(event string, firstRun, lastRun int) {
+	for i := firstRun; i <= lastRun; i++ {
+		err := CrawlTable(event, i)
+		if checkErrNoTable(err) {
+			log.Println("Assuming no more runs in range")
 			return
 		}
 	}
 }
 
-func Crawler(event string, runNumber int) (err error) {
-	err = GetResults(event, runNumber)
-	if err != nil {
-		log.Println(err)
+func CrawlAll(event string) {
+	for i := 1; !checkErrNoTable(CrawlTable(event, i)); i++ {
 	}
+	log.Println("Assuming no more runs in this event")
+}
+
+func checkErrNoTable(err error) bool {
+	if err != nil && len(err.Error()) >= len(errNoTable) && err.Error()[:len(errNoTable)] == errNoTable {
+		return true
+	}
+	return false
 }
 
 func GetResults(event string, runNumber int) (err error) {
@@ -70,7 +86,7 @@ func ParseBody(body *[]byte, event string, runNumber int) (err error) {
 
 	table := rxTableBody.FindStringSubmatch(string(*body))
 	if len(table) < 2 {
-		return errors.New(fmt.Sprintf("Could not find table in event %s, run# %d", event, runNumber))
+		return errors.New(fmt.Sprintf("%s %s, run# %d", errNoTable, event, runNumber))
 	}
 
 	rows := rxTableRow.FindAllStringSubmatch(table[1], -1)

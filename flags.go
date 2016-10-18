@@ -67,11 +67,11 @@ func Flags() {
 	flag.Var(&fCrawlTable, "table", "")
 	flag.Var(&fCrawlRange, "range", "")
 	flag.Var(&fCrawlAll, "all", "")
-	flag.Var(&fCrawlAll, "latest", "")
+	flag.Var(&fCrawlLatest, "latest", "")
 
 	flag.Parse()
 
-	if len(fCrawlTable) == 0 && len(fCrawlRange) == 0 && len(fCrawlAll) == 0 {
+	if len(fCrawlTable)+len(fCrawlRange)+len(fCrawlAll)+len(fCrawlLatest) == 0 {
 		fmt.Println("No run results selected for download.")
 		flag.Usage()
 		os.Exit(1)

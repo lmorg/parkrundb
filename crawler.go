@@ -15,7 +15,7 @@ const uriTableLatest = "http://www.parkrun.org.uk/%s/results/latestresults/"
 
 const errNoTable = "Could not find table"
 
-const latest = -1
+const latest = 0
 
 var (
 	rxPageTitle *regexp.Regexp
@@ -103,8 +103,10 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 	}
 
 	title := rxPageTitle.FindStringSubmatch(body)
+	eventName := title[1]
+	runDate := title[3]
 	if runNumber == latest {
-		runNumber = title[2]
+		runNumber, _ = strconv.Atoi(title[2])
 	}
 
 	rows := rxTableRow.FindAllStringSubmatch(table[1], -1)
@@ -125,7 +127,9 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 		}
 
 		rec.EventCode = event
+		rec.EventName = eventName
 		rec.RunNumber = runNumber
+		rec.Date = runDate
 		rec.Pos, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[0][1], ""))
 		rec.ParkRunner = parkrunner
 		rec.Time = rxStripTags.ReplaceAllString(cells[2][1], "")

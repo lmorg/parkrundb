@@ -11,8 +11,10 @@ import (
 const (
 	sqlCreateTable = `CREATE TABLE %s.results (
 							id              string PRIMARY KEY,
-							event           string,
+							event_code      string,
+							event_name      string,
 							run_number      integer,
+							date            datetime,
 							pos             integer,
 							parkrunner      string,
 							time            string,
@@ -27,8 +29,10 @@ const (
 
 	sqlInsertRecord = `INSERT INTO mem.results (
 							id,
-							event,
+							event_code,
+							event_name,
 							run_number,
+							date,
 							pos,
 							parkrunner,
 							time,

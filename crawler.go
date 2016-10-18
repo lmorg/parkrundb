@@ -35,13 +35,14 @@ func init() {
 }
 
 func CrawlTable(event string, runNumber int) (err error) {
+	log.Printf("Processing event %s #%d", event, runNumber)
+
 	if err = GetResults(event, runNumber); err != nil {
 		log.Println(err)
 	}
 
-	if err = SyncDbToDisk(); err == nil {
-		log.Printf("Imported %s run number #%d", event, runNumber)
-	}
+	SyncDbToDisk()
+
 	return
 }
 
@@ -49,7 +50,7 @@ func CrawlRange(event string, firstRun, lastRun int) {
 	for i := firstRun; i <= lastRun; i++ {
 		err := CrawlTable(event, i)
 		if checkErrNoTable(err) {
-			log.Println("Assuming no more runs in range")
+			log.Printf("Assuming no more runs in range: event %s, firstRun %d, lastRun %d", event, firstRun, lastRun)
 			return
 		}
 	}
@@ -60,7 +61,7 @@ func CrawlAll(event string) {
 		// No need for code here because the function call is also used as the loop exception:
 		// !checkErrNoTable(CrawlTable(...))
 	}
-	log.Println("Assuming no more runs in this event")
+	log.Printf("Assuming no more runs in this event: %s", event)
 }
 
 func checkErrNoTable(err error) bool {

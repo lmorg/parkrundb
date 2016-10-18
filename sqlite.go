@@ -44,7 +44,8 @@ const (
 							total_runs
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
 
-	sqlSyncToDisk = `INSERT INTO main.results SELECT * FROM mem.results; DELETE FROM mem.results;`
+	sqlSyncToDisk = `INSERT INTO main.results SELECT * FROM mem.results;`
+	sqlPurgeMem   = `DELETE FROM mem.results;`
 )
 
 var db *sql.DB
@@ -93,10 +94,11 @@ func InsertRecord(rec Record) (err error) {
 	return
 }
 
-func SyncDbToDisk() (err error) {
-	if _, err = db.Exec(sqlSyncToDisk); err != nil {
+func SyncDbToDisk() {
+	if _, err := db.Exec(sqlSyncToDisk); err != nil {
 		log.Println("Error syncing to disk:", err)
 	}
+	db.Exec(sqlPurgeMem)
 	return
 }
 

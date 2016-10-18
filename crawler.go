@@ -132,7 +132,7 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 			rec.Date = runDate
 			rec.Pos, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[0][1], ""))
 			rec.ParkRunner = parkrunner
-			rec.Gender = 'U'
+			rec.Gender = "U"
 			if err = InsertRecord(rec); err != nil {
 				return
 			}
@@ -152,7 +152,7 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 		rec.Time = rxStripTags.ReplaceAllString(cells[2][1], "")
 		rec.AgeCat = rxStripTags.ReplaceAllString(cells[3][1], "")
 		rec.AgeGrade = rxStripTags.ReplaceAllString(cells[4][1], "")
-		rec.Gender = rxStripTags.ReplaceAllString(cells[5][1], "")[0]
+		rec.Gender = rxStripTags.ReplaceAllString(cells[5][1], "")
 		rec.GenderPos, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[6][1], ""))
 		rec.Club = rxStripTags.ReplaceAllString(cells[7][1], "")
 		rec.Note = rxStripTags.ReplaceAllString(cells[8][1], "")

@@ -12,7 +12,7 @@ type Record struct {
 	Time       string
 	AgeCat     string
 	AgeGrade   string
-	Gender     byte
+	Gender     string
 	GenderPos  int
 	Club       string
 	Note       string

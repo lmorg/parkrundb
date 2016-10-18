@@ -9,21 +9,21 @@ import (
 
 const (
 	sqlCreateTable = `CREATE TABLE IF NOT EXISTS %s.results (
-							id              string PRIMARY KEY,
-							event_code      string,
-							event_name      string,
-							run_number      integer,
-							date            datetime,
-							pos             integer,
-							parkrunner      string,
-							time            string,
-							age_cat         string,
-							age_grade       string,
-							gender          char,
-							gender_pos      integer,
-							club            string,
-							note            string,
-							total_runs      integer
+							id              TEXT PRIMARY KEY,
+							event_code      TEXT,
+							event_name      TEXT,
+							run_number      INTEGER,
+							date            TEXT,
+							pos             INTEGER,
+							parkrunner      TEXT,
+							time            TEXT,
+							age_cat         TEXT,
+							age_grade       TEXT,
+							gender          TEXT,
+							gender_pos      INTEGER,
+							club            TEXT,
+							note            TEXT,
+							total_runs      INTEGER
 						);`
 
 	sqlInsertRecord = `INSERT INTO mem.results (

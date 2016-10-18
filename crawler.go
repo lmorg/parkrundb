@@ -27,7 +27,7 @@ var (
 )
 
 func init() {
-	rxPageTitle, _ = regexp.Compile(`<h2>(.*?) parkrun #\s+([0-9]+) -\s+([0-9]{2}/[0-9]{2}/[0-9]{4})</h2>`)
+	rxPageTitle, _ = regexp.Compile(`<h2>(.*?) parkrun #\s+([0-9]+) -\s+([0-9]{2})/([0-9]{2})/([0-9]{4})</h2>`)
 	rxTableBody, _ = regexp.Compile(`<tbody>(.*?)</tbody>`)
 	rxTableRow, _ = regexp.Compile(`<tr.*?>(.*?)</tr>`)
 	rxTableCell, _ = regexp.Compile(`<td.*?>(.*?)</td>`)
@@ -111,7 +111,7 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 
 	title := rxPageTitle.FindStringSubmatch(body)
 	eventName := title[1]
-	runDate := title[3]
+	runDate := title[5] + "-" + title[4] + "-" + title[3] // inside loop so concatenation is faster than fmt.Sprinf()
 	if runNumber == latest {
 		runNumber, _ = strconv.Atoi(title[2])
 	}
@@ -125,7 +125,7 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 		parkrunner := rxStripTags.ReplaceAllString(cells[1][1], "")
 
 		if parkrunner == Unknown {
-			//log.Println(fmt.Sprintf("Skipping unknown in event %s, run# %d, row %d", event, runNumber, i))
+
 			rec.EventCode = event
 			rec.EventName = eventName
 			rec.RunNumber = runNumber

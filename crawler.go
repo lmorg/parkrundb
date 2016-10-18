@@ -118,7 +118,17 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 		parkrunner := rxStripTags.ReplaceAllString(cells[1][1], "")
 
 		if parkrunner == Unknown {
-			log.Println(fmt.Sprintf("Skipping unknown in event %s, run# %d, row %d", event, runNumber, i))
+			//log.Println(fmt.Sprintf("Skipping unknown in event %s, run# %d, row %d", event, runNumber, i))
+			rec.EventCode = event
+			rec.EventName = eventName
+			rec.RunNumber = runNumber
+			rec.Date = runDate
+			rec.Pos, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[0][1], ""))
+			rec.ParkRunner = parkrunner
+			rec.Gender = 'U'
+			if err = InsertRecord(rec); err != nil {
+				return
+			}
 			continue
 		}
 
@@ -140,7 +150,6 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 		rec.Club = rxStripTags.ReplaceAllString(cells[7][1], "")
 		rec.Note = rxStripTags.ReplaceAllString(cells[8][1], "")
 		rec.TotalRuns, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[9][1], ""))
-
 		if err = InsertRecord(rec); err != nil {
 			return
 		}

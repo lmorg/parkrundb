@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-const Version = "1.1 ALPHA"
+const Version = "1.2 BETA"
 
 func main() {
 	log.Println("Version", Version)

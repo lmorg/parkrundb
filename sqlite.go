@@ -10,7 +10,7 @@ import (
 
 const (
 	sqlCreateTable = `CREATE TABLE %s.results (
-							id              integer PRIMARY KEY,
+							id              string PRIMARY KEY,
 							event           string,
 							run_number      integer,
 							pos             integer,
@@ -26,6 +26,7 @@ const (
 						);`
 
 	sqlInsertRecord = `INSERT INTO mem.results (
+							id,
 							event,
 							run_number,
 							pos,
@@ -38,7 +39,7 @@ const (
 							club,
 							note,
 							total_runs
-						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
+						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
 
 	sqlSyncToDisk = `INSERT INTO main.results SELECT * FROM mem.results;`
 )
@@ -77,8 +78,11 @@ func OpenDB() {
 func InsertRecord(rec Record) (err error) {
 	mutex.Lock()
 	_, err = db.Exec(sqlInsertRecord,
-		rec.Event,
+		fmt.Sprintf("%s:%d:%d", rec.EventCode, rec.RunNumber, rec.Pos),
+		rec.EventCode,
+		rec.EventName,
 		rec.RunNumber,
+		rec.Date,
 		rec.Pos,
 		rec.ParkRunner,
 		rec.Time,
@@ -93,7 +97,7 @@ func InsertRecord(rec Record) (err error) {
 	mutex.Unlock()
 
 	if err == nil {
-		log.Println(rec.Event, rec.RunNumber, rec.Pos, rec.ParkRunner)
+		log.Println(rec.EventCode, rec.RunNumber, rec.Pos, rec.ParkRunner)
 	}
 
 	return

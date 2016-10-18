@@ -13,12 +13,12 @@ var (
 
 	fCrawlTable  FlagCrawlTable
 	fCrawlRange  FlagCrawlRange
-	fCrawlAll    FlagCrawlAll
-	fCrawlLatest FlagCrawlAll
+	fCrawlAll    FlagCrawlEvent
+	fCrawlLatest FlagCrawlEvent
 
 	rxFlagTable *regexp.Regexp
 	rxFlagRange *regexp.Regexp
-	rxFlagAll   *regexp.Regexp // also used for latest
+	rxFlagEvent *regexp.Regexp // also used for latest and all
 )
 
 type FlagCrawlTable []string
@@ -43,11 +43,11 @@ func (fs *FlagCrawlRange) Set(value string) error {
 	return nil
 }
 
-type FlagCrawlAll []string
+type FlagCrawlEvent []string // also used for latest and all
 
-func (fs *FlagCrawlAll) String() string { return fmt.Sprint(*fs) }
-func (fs *FlagCrawlAll) Set(value string) error {
-	if !rxFlagAll.MatchString(value) {
+func (fs *FlagCrawlEvent) String() string { return fmt.Sprint(*fs) }
+func (fs *FlagCrawlEvent) Set(value string) error {
+	if !rxFlagEvent.MatchString(value) {
 		return errors.New(fmt.Sprintf(`"%s" does not match format: "eventname" (text only)`, value))
 	}
 	*fs = append(*fs, value)
@@ -57,7 +57,7 @@ func (fs *FlagCrawlAll) Set(value string) error {
 func init() {
 	rxFlagTable, _ = regexp.Compile(`^([a-z]+),([0-9]+)$`)
 	rxFlagRange, _ = regexp.Compile(`^([a-z]+),([0-9]+),([0-9]+)$`)
-	rxFlagAll, _ = regexp.Compile(`^([a-z]+)$`)
+	rxFlagEvent, _ = regexp.Compile(`^([a-z]+)$`)
 }
 
 func Flags() {

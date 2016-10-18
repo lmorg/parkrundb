@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	sqlCreateTable = `CREATE TABLE %s.results (
+	sqlCreateTable = `CREATE TABLE IF NOT EXISTS %s.results (
 							id              string PRIMARY KEY,
 							event_code      string,
 							event_name      string,
@@ -65,7 +65,7 @@ func OpenDB() {
 
 	_, err = db.Exec(fmt.Sprintf(sqlCreateTable, "main"))
 	if err != nil {
-		log.Println("Could not create table:", err)
+		log.Fatalln("Could not create table:", err)
 	}
 
 	_, err = db.Exec(`ATTACH DATABASE ':memory:' AS mem;`)

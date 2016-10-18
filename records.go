@@ -3,8 +3,10 @@ package main
 const Unknown = "Unknown"
 
 type Record struct {
-	Event      string
+	EventCode  string
+	EventName  string
 	RunNumber  int
+	Date       string
 	Pos        int
 	ParkRunner string
 	Time       string

@@ -18,6 +18,7 @@ const errNoTable = "Could not find table"
 const latest = -1
 
 var (
+	rxPageTitle *regexp.Regexp
 	rxTableBody *regexp.Regexp
 	rxTableRow  *regexp.Regexp
 	rxTableCell *regexp.Regexp
@@ -25,6 +26,7 @@ var (
 )
 
 func init() {
+	rxPageTitle, _ = regexp.Compile(`<h2>(.*?) parkrun #\s+([0-9]+) -\s+([0-9]{2}/[0-9]{2}/[0-9]{4})</h2>`)
 	rxTableBody, _ = regexp.Compile(`<tbody>(.*?)</tbody>`)
 	rxTableRow, _ = regexp.Compile(`<tr.*?>(.*?)</tr>`)
 	rxTableCell, _ = regexp.Compile(`<td.*?>(.*?)</td>`)
@@ -83,21 +85,26 @@ func GetResults(event string, runNumber int) (err error) {
 		return
 	}
 
-	err = ParseBody(&body, event, runNumber)
+	err = ParseBody(string(body), event, runNumber)
 
 	return
 }
 
-func ParseBody(body *[]byte, event string, runNumber int) (err error) {
+func ParseBody(body string, event string, runNumber int) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = errors.New(fmt.Sprintf("Panic caught: %s", r))
 		}
 	}()
 
-	table := rxTableBody.FindStringSubmatch(string(*body))
+	table := rxTableBody.FindStringSubmatch(body)
 	if len(table) < 2 {
 		return errors.New(fmt.Sprintf("%s %s, run# %d", errNoTable, event, runNumber))
+	}
+
+	title := rxPageTitle.FindStringSubmatch(body)
+	if runNumber == latest {
+		runNumber = title[2]
 	}
 
 	rows := rxTableRow.FindAllStringSubmatch(table[1], -1)
@@ -117,7 +124,7 @@ func ParseBody(body *[]byte, event string, runNumber int) (err error) {
 			return errors.New(fmt.Sprintf("Failing; too few cells in event %s, run# %d, row %d", event, runNumber, i))
 		}
 
-		rec.Event = event
+		rec.EventCode = event
 		rec.RunNumber = runNumber
 		rec.Pos, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[0][1], ""))
 		rec.ParkRunner = parkrunner

@@ -30,10 +30,6 @@ func main() {
 		CrawlTable(flag, latest)
 	}
 
-	if err := SyncDbToDisk(); err != nil {
-		log.Println(err)
-	}
-
 	CloseDB()
 }
 

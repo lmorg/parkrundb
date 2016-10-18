@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 const uriTableRunNumber = "http://www.parkrun.org.uk/%s/results/weeklyresults/?runSeqNumber=%d"
@@ -34,9 +35,12 @@ func init() {
 }
 
 func CrawlTable(event string, runNumber int) (err error) {
-	err = GetResults(event, runNumber)
-	if err != nil {
+	if err = GetResults(event, runNumber); err != nil {
 		log.Println(err)
+	}
+
+	if err = SyncDbToDisk(); err == nil {
+		log.Printf("Imported %s run number #%d", event, runNumber)
 	}
 	return
 }
@@ -53,12 +57,14 @@ func CrawlRange(event string, firstRun, lastRun int) {
 
 func CrawlAll(event string) {
 	for i := 1; !checkErrNoTable(CrawlTable(event, i)); i++ {
+		// No need for code here because the function call is also used as the loop exception:
+		// !checkErrNoTable(CrawlTable(...))
 	}
 	log.Println("Assuming no more runs in this event")
 }
 
 func checkErrNoTable(err error) bool {
-	if err != nil && len(err.Error()) >= len(errNoTable) && err.Error()[:len(errNoTable)] == errNoTable {
+	if err != nil && !strings.HasSuffix(err.Error(), errNoTable) {
 		return true
 	}
 	return false

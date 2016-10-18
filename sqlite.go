@@ -5,7 +5,6 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
-	"sync"
 )
 
 const (
@@ -45,42 +44,34 @@ const (
 							total_runs
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
 
-	sqlSyncToDisk = `INSERT INTO main.results SELECT * FROM mem.results;`
+	sqlSyncToDisk = `INSERT INTO main.results SELECT * FROM mem.results; DELETE FROM mem.results;`
 )
 
-var (
-	db    *sql.DB
-	mutex = &sync.Mutex{}
-)
+var db *sql.DB
 
 func OpenDB() {
 	var err error
 
 	log.Println("Opening database")
 
-	db, err = sql.Open("sqlite3", fmt.Sprintf("file:%s", fDbFileName))
-	if err != nil {
+	if db, err = sql.Open("sqlite3", fmt.Sprintf("file:%s", fDbFileName)); err != nil {
 		log.Fatalln("Could not open database:", err)
 	}
 
-	_, err = db.Exec(fmt.Sprintf(sqlCreateTable, "main"))
-	if err != nil {
+	if _, err = db.Exec(fmt.Sprintf(sqlCreateTable, "main")); err != nil {
 		log.Fatalln("Could not create table:", err)
 	}
 
-	_, err = db.Exec(`ATTACH DATABASE ':memory:' AS mem;`)
-	if err != nil {
+	if _, err = db.Exec(`ATTACH DATABASE ':memory:' AS mem;`); err != nil {
 		log.Fatalln("Could not create in memory database")
 	}
 
-	_, err = db.Exec(fmt.Sprintf(sqlCreateTable, "mem"))
-	if err != nil {
+	if _, err = db.Exec(fmt.Sprintf(sqlCreateTable, "mem")); err != nil {
 		log.Fatalln("Could not create memory table:", err)
 	}
 }
 
 func InsertRecord(rec Record) (err error) {
-	mutex.Lock()
 	_, err = db.Exec(sqlInsertRecord,
 		fmt.Sprintf("%s:%d:%d", rec.EventCode, rec.RunNumber, rec.Pos),
 		rec.EventCode,
@@ -98,18 +89,14 @@ func InsertRecord(rec Record) (err error) {
 		rec.Note,
 		rec.TotalRuns,
 	)
-	mutex.Unlock()
-
-	if err == nil {
-		log.Println(rec.EventCode, rec.RunNumber, rec.Pos, rec.ParkRunner)
-	}
 
 	return
 }
 
 func SyncDbToDisk() (err error) {
-	log.Println("Syncing memory to", fDbFileName)
-	_, err = db.Exec(sqlSyncToDisk)
+	if _, err = db.Exec(sqlSyncToDisk); err != nil {
+		log.Println("Error syncing to disk:", err)
+	}
 	return
 }
 

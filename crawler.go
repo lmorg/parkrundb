@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"html"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -123,7 +124,7 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 
 		cells := rxTableCell.FindAllStringSubmatch(rows[i][1], -1)
 
-		parkrunner := rxStripTags.ReplaceAllString(cells[1][1], "")
+		parkrunner := cleanseRecord(cells[1][1])
 
 		if parkrunner == Unknown {
 
@@ -131,7 +132,7 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 			rec.EventName = eventName
 			rec.RunNumber = runNumber
 			rec.Date = runDate
-			rec.Pos, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[0][1], ""))
+			rec.Pos, _ = strconv.Atoi(cleanseRecord(cells[0][1]))
 			rec.ParkRunner = parkrunner
 			rec.Gender = "U"
 			if err = InsertRecord(rec); err != nil {
@@ -148,16 +149,16 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 		rec.EventName = eventName
 		rec.RunNumber = runNumber
 		rec.Date = runDate
-		rec.Pos, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[0][1], ""))
+		rec.Pos, _ = strconv.Atoi(cleanseRecord(cells[0][1]))
 		rec.ParkRunner = parkrunner
-		rec.Time = rxStripTags.ReplaceAllString(cells[2][1], "")
-		rec.AgeCat = rxStripTags.ReplaceAllString(cells[3][1], "")
-		rec.AgeGrade = rxStripTags.ReplaceAllString(cells[4][1], "")
-		rec.Gender = rxStripTags.ReplaceAllString(cells[5][1], "")
-		rec.GenderPos, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[6][1], ""))
-		rec.Club = rxStripTags.ReplaceAllString(cells[7][1], "")
-		rec.Note = rxStripTags.ReplaceAllString(cells[8][1], "")
-		rec.TotalRuns, _ = strconv.Atoi(rxStripTags.ReplaceAllString(cells[9][1], ""))
+		rec.Time = cleanseRecord(cells[2][1])
+		rec.AgeCat = cleanseRecord(cells[3][1])
+		rec.AgeGrade = cleanseRecord(cells[4][1])
+		rec.Gender = cleanseRecord(cells[5][1])
+		rec.GenderPos, _ = strconv.Atoi(cleanseRecord(cells[6][1]))
+		rec.Club = cleanseRecord(cells[7][1])
+		rec.Note = cleanseRecord(cells[8][1])
+		rec.TotalRuns, _ = strconv.Atoi(cleanseRecord(cells[9][1]))
 		if err = InsertRecord(rec); err != nil {
 			return
 		}
@@ -165,4 +166,10 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 	}
 
 	return
+}
+
+func cleanseRecord(s string) string {
+	s = rxStripTags.ReplaceAllString(s, "")
+	s = html.UnescapeString(s)
+	return s
 }

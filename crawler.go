@@ -41,8 +41,6 @@ func CrawlTable(event string, runNumber int) (err error) {
 		log.Println(err)
 	}
 
-	SyncDbToDisk()
-
 	return
 }
 
@@ -103,6 +101,9 @@ func ParseBody(body string, event string, runNumber int) (err error) {
 			err = errors.New(fmt.Sprintf("Panic caught: %s", r))
 		}
 	}()
+
+	BeginTransaction()
+	defer CommitTransaction()
 
 	table := rxTableBody.FindStringSubmatch(body)
 	if len(table) < 2 {

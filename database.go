@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	sqlCreateTable = `CREATE TABLE IF NOT EXISTS %s.results (
+	sqlCreateTable = `CREATE TABLE IF NOT EXISTS results (
 							id              TEXT PRIMARY KEY,
 							event_code      TEXT,
 							event_name      TEXT,
@@ -26,7 +26,7 @@ const (
 							total_runs      INTEGER
 						);`
 
-	sqlInsertRecord = `INSERT INTO mem.results (
+	sqlInsertRecord = `INSERT INTO results (
 							id,
 							event_code,
 							event_name,
@@ -43,38 +43,38 @@ const (
 							note,
 							total_runs
 						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`
-
-	sqlSyncToDisk = `INSERT INTO main.results SELECT * FROM mem.results;`
-	sqlPurgeMem   = `DELETE FROM mem.results;`
 )
 
-var db *sql.DB
+var (
+	db *sql.DB
+	tx *sql.Tx
+)
 
 func OpenDB() {
 	var err error
 
 	log.Println("Opening database")
 
-	if db, err = sql.Open("sqlite3", fmt.Sprintf("file:%s", fDbFileName)); err != nil {
+	if db, err = sql.Open("sqlite3", "file:"+fDbFileName); err != nil {
 		log.Fatalln("Could not open database:", err)
 	}
 
-	if _, err = db.Exec(fmt.Sprintf(sqlCreateTable, "main")); err != nil {
+	if _, err = db.Exec(sqlCreateTable); err != nil {
 		log.Fatalln("Could not create table:", err)
 	}
 
-	if _, err = db.Exec(`ATTACH DATABASE ':memory:' AS mem;`); err != nil {
+	/*if _, err = db.Exec(`ATTACH DATABASE ':memory:' AS mem;`); err != nil {
 		log.Fatalln("Could not create in memory database")
 	}
 
 	if _, err = db.Exec(fmt.Sprintf(sqlCreateTable, "mem")); err != nil {
 		log.Fatalln("Could not create memory table:", err)
-	}
+	}*/
 }
 
 func InsertRecord(rec Record) (err error) {
-	_, err = db.Exec(sqlInsertRecord,
-		fmt.Sprintf("%s:%d:%d", rec.EventCode, rec.RunNumber, rec.Pos),
+	_, err = tx.Exec(sqlInsertRecord,
+		fmt.Sprintf("%s:%d:%d", rec.EventCode, rec.RunNumber, rec.Pos), // unique key
 		rec.EventCode,
 		rec.EventName,
 		rec.RunNumber,
@@ -94,12 +94,17 @@ func InsertRecord(rec Record) (err error) {
 	return
 }
 
-func SyncDbToDisk() {
-	if _, err := db.Exec(sqlSyncToDisk); err != nil {
-		log.Println("Error syncing to disk:", err)
+func BeginTransaction() {
+	var err error
+	if tx, err = db.Begin(); err != nil {
+		log.Fatalln("Could not open transaction:", err)
 	}
-	db.Exec(sqlPurgeMem)
-	return
+}
+
+func CommitTransaction() {
+	if err := tx.Commit(); err != nil {
+		log.Println("Error commiting transaction:", err)
+	}
 }
 
 func CloseDB() {
